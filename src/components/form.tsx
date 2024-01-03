@@ -1,30 +1,30 @@
 'use client'
 
 import { createContent } from '@/actions/content'
-import { useRef } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { toastError, toastSuccess } from '@/libs/toast'
+import { useEffect, useRef } from 'react'
+import { useFormState } from 'react-dom'
 import SubmitButton from './submit-button'
-
-const INITIAL_STATE = {
-  message: '',
-  errors: undefined,
-  newContent: undefined
-}
 
 export default function Form () {
   const [state, formAction] = useFormState(createContent, null)
   const formRef = useRef<HTMLFormElement | null>(null)
-  const { pending, data} = useFormStatus()
-
-  console.log({ state})
-  console.log({ pending})
-  console.log({ data })
 
   const hasError = state?.errors !== undefined
 
-  if (formRef.current !== null && state?.success) {
-    formRef.current.reset()
-  }
+  
+  useEffect(() => {
+    if (formRef.current !== null && state?.success) {
+      formRef.current.reset()
+      toastSuccess(state?.message ?? '')
+      return
+    }
+
+    if (state?.errors === undefined) return
+
+    toastError(state?.errors?.content?.[0] ?? '')
+    
+  },[state])
   
   return (
     <form ref={formRef} action={formAction} className='max-w-sm mx-auto'>
